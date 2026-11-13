@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1B3FA0">
+<title>Trouve Pro : professionnels à Douala</title>
+<style>
+  :root {
+    --cobalt: #1B3FA0;
+    --sun: #FFC93C;
+    --paper: #F6F7FB;
+    --ink: #14213D;
+    --muted: #5B6478;
+    --line: #D9DEEA;
+    --wa: #168F4A;
+    --meca: #1B3FA0;
+    --plomb: #0E7C86;
+    --coif: #8A2B6B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+  header {
+    background: var(--cobalt);
+    color: #fff;
+    padding: 20px 16px 22px;
+    border-bottom: 6px solid var(--sun);
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+  header p { margin: 4px 0 16px; opacity: 0.9; }
+  .search {
+    width: 100%;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .filters { padding: 14px 16px 6px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+  .chip {
+    flex: none;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .row2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+  .quartier { min-height: 44px; padding: 0 10px; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  #count { color: var(--muted); font-size: 0.9rem; }
+
+  .demo { margin: 10px 16px 0; padding: 10px 12px; background: #FFF4CC; border-radius: 8px; font-size: 0.9rem; }
+
+  ul { list-style: none; margin: 8px 0 0; padding: 0; }
+  .pro { background: #fff; border-bottom: 1px solid var(--line); border-left: 6px solid var(--c); padding: 14px 16px; }
+  .pro h2 { margin: 0; font-size: 1.1rem; }
+  .meta { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
+  .meta b { color: var(--c); }
+  .desc { margin: 6px 0 12px; }
+  .rate { font-weight: 700; }
+  .rate i { color: #D89A00; font-style: normal; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    flex: 1;
+    min-height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .call { background: var(--cobalt); color: #fff; }
+  .wa { background: var(--wa); color: #fff; }
+
+  .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+  .join { margin: 24px 16px 40px; padding: 18px 16px; background: #fff; border-radius: 14px; border: 2px solid var(--ink); }
+  .join h2 { margin: 0 0 4px; font-size: 1.2rem; }
+  .join p { margin: 0 0 14px; color: var(--muted); }
+  .join label { display: block; margin: 10px 0 4px; font-weight: 600; }
+  .join input, .join select { width: 100%; min-height: 46px; padding: 0 12px; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  .join { margin-bottom: 16px; }
+  .join .btn { width: 100%; margin-top: 16px; background: var(--ink); color: #fff; }
+  .join .alt { margin-top: 8px; background: #fff; color: var(--ink); border: 2px solid var(--ink); }
+
+  .contact { margin: 0 16px 40px; padding: 18px 16px; background: #fff; border-radius: 14px; border: 2px solid var(--line); }
+  .contact h2 { margin: 0 0 4px; font-size: 1.2rem; }
+  .contact p { margin: 0 0 14px; color: var(--muted); }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  .mail { background: #fff; color: var(--ink); border: 2px solid var(--ink); }
+  .contact small { display: block; margin-top: 12px; color: var(--muted); word-break: break-all; }
+  #err { color: #B42318; min-height: 1.4em; margin: 8px 0 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Trouve Pro</h1>
+    <p>Mécaniciens, plombiers, électriciens, coiffeurs et couturiers à Douala.</p>
+    <input id="q" class="search" type="search" placeholder="Que cherches-tu ? Ex. : fuite d'eau, freins, tresses" aria-label="Rechercher un service">
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="filters">
+    <div class="chips" id="chips" role="group" aria-label="Catégories"></div>
+    <div class="row2">
+      <select id="quartier" class="quartier" aria-label="Quartier"></select>
+      <span id="count" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <div class="demo" id="demo">Version de démonstration : les professionnels affichés sont des exemples.</div>
+
+  <ul id="list"></ul>
+
+  <section class="join" aria-labelledby="joinTitle">
+    <h2 id="joinTitle">Tu es professionnel ?</h2>
+    <p>Inscris-toi gratuitement pour que les clients de Douala te trouvent.</p>
+    <label for="jn">Ton nom ou le nom de ton atelier</label>
+    <input id="jn" autocomplete="name">
+    <label for="jm">Ton métier</label>
+    <select id="jm"></select>
+    <label for="jq">Ton quartier</label>
+    <select id="jq"></select>
+    <label for="jt">Ton numéro de téléphone</label>
+    <input id="jt" type="tel" inputmode="tel" placeholder="6XX XX XX XX" autocomplete="tel">
+    <p id="err" role="alert"></p>
+    <button class="btn" id="send" type="button">Envoyer mon inscription sur WhatsApp</button>
+    <button class="btn alt" id="sendMail" type="button">Envoyer par e-mail</button>
+  </section>
+
+  <section class="contact" aria-labelledby="contactTitle">
+    <h2 id="contactTitle">Nous contacter</h2>
+    <p>Une question, une suggestion ou un professionnel à ajouter ?</p>
+    <div class="stack">
+      <a class="btn wa" href="https://wa.me/237690064926" target="_blank" rel="noopener">WhatsApp : 690 06 49 26</a>
+      <a class="btn call" href="tel:+237676849070">Appeler : 676 84 90 70</a>
+      <a class="btn mail" href="mailto:ndjissalepokassavladimirjunior@gmail.com">Écrire un e-mail</a>
+    </div>
+    <small>ndjissalepokassavladimirjunior@gmail.com</small>
+  </section>
+</main>
+
+<script>
+  // Contacts de Trouve Pro (indicatif 237 + numéro, sans espaces ni +)
+  var ADMIN_WHATSAPP = "237690064926";
+  var ADMIN_PHONE2 = "237676849070";
+  var ADMIN_EMAIL = "ndjissalepokassavladimirjunior@gmail.com";
+  // Mets false quand tu auras de vrais professionnels dans la liste
+  var DEMO = true;
+
+  var CATS = {
+    meca:  { label: "Mécanique",                color: "#1B3FA0" },
+    plomb: { label: "Plomberie et électricité", color: "#0E7C86" },
+    coif:  { label: "Coiffure et couture",      color: "#8A2B6B" }
+  };
+  var QUARTIERS = ["Akwa","Bepanda","Bonabéri","Bonamoussadi","Bonapriso","Deido","Logbaba","Makepe","Ndokotti","Yassa"];
+
+  // Exemples fictifs : remplace par de vrais professionnels (numéros au format 237XXXXXXXXX)
+  var PROS = [
+    { n: "Atelier Mbarga",       m: "meca",  q: "Bepanda",      t: "237600000001", r: 4.6, a: 23, d: "Moteur, freins et vidange pour voitures et motos." },
+    { n: "Garage Ndoumbè",       m: "meca",  q: "Bonabéri",     t: "237600000002", r: 4.3, a: 14, d: "Diagnostic électronique et réparation de climatisation." },
+    { n: "Moto Service Essomba", m: "meca",  q: "Makepe",       t: "237600000003", r: 4.8, a: 31, d: "Réparation de motos-taxis, dépannage rapide." },
+    { n: "Plomberie Fotso",      m: "plomb", q: "Akwa",         t: "237600000004", r: 4.5, a: 19, d: "Fuites, WC, chauffe-eau et installation de tuyauterie." },
+    { n: "Élec Pro Tchoumi",     m: "plomb", q: "Bonamoussadi", t: "237600000005", r: 4.7, a: 27, d: "Installation, pannes de courant, tableaux électriques." },
+    { n: "Dépannage Eau et Lumière", m: "plomb", q: "Deido",    t: "237600000006", r: 4.1, a: 9,  d: "Plombier et électricien disponibles le soir et le week-end." },
+    { n: "Salon Belle Nattes",   m: "coif",  q: "Ndokotti",     t: "237600000007", r: 4.9, a: 42, d: "Tresses, tissages, coiffure à domicile sur rendez-vous." },
+    { n: "Couture Mama Nguimfack", m: "coif", q: "Logbaba",     t: "237600000008", r: 4.4, a: 17, d: "Robes, tenues de cérémonie et retouches." },
+    { n: "Atelier Wax Élégance", m: "coif",  q: "Bonapriso",    t: "237600000009", r: 4.6, a: 22, d: "Couture sur mesure en pagne et wax." }
+  ];
+
+  var state = { cat: "all", q: "", quartier: "all" };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function norm(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function buildControls() {
+    var chips = $("chips");
+    var items = [["all", "Tous"]].concat(Object.keys(CATS).map(function (k) { return [k, CATS[k].label]; }));
+    items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.type = "button";
+      b.textContent = it[1];
+      b.setAttribute("aria-pressed", it[0] === state.cat ? "true" : "false");
+      b.onclick = function () {
+        state.cat = it[0];
+        Array.prototype.forEach.call(chips.children, function (c) { c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        render();
+      };
+      chips.appendChild(b);
+    });
+
+    var sel = $("quartier");
+    sel.appendChild(new Option("Tous les quartiers", "all"));
+    QUARTIERS.forEach(function (q) { sel.appendChild(new Option(q, q)); });
+    sel.onchange = function () { state.quartier = sel.value; render(); };
+
+    var jm = $("jm");
+    Object.keys(CATS).forEach(function (k) { jm.appendChild(new Option(CATS[k].label, k)); });
+    var jq = $("jq");
+    QUARTIERS.forEach(function (q) { jq.appendChild(new Option(q, q)); });
+
+    $("q").oninput = function (e) { state.q = norm(e.target.value.trim()); render(); };
+    $("demo").hidden = !DEMO;
+  }
+
+  function render() {
+    var list = $("list");
+    list.textContent = "";
+    var found = PROS.filter(function (p) {
+      if (state.cat !== "all" && p.m !== state.cat) return false;
+      if (state.quartier !== "all" && p.q !== state.quartier) return false;
+      if (state.q) {
+        var hay = norm([p.n, p.d, p.q, CATS[p.m].label].join(" "));
+        return state.q.split(" ").every(function (w) { return hay.indexOf(w) !== -1; });
+      }
+      return true;
+    }).sort(function (a, b) { return b.r - a.r; });
+
+    $("count").textContent = found.length + (found.length > 1 ? " professionnels" : " professionnel");
+
+    if (!found.length) {
+      var e = document.createElement("li");
+      e.className = "empty";
+      e.textContent = "Aucun professionnel trouvé. Essaie un autre quartier ou une autre catégorie.";
+      list.appendChild(e);
+      return;
+    }
+
+    found.forEach(function (p) {
+      var li = document.createElement("li");
+      li.className = "pro";
+      li.style.setProperty("--c", CATS[p.m].color);
+
+      var h = document.createElement("h2");
+      h.textContent = p.n;
+
+      var meta = document.createElement("p");
+      meta.className = "meta";
+      var cat = document.createElement("b");
+      cat.textContent = CATS[p.m].label;
+      meta.appendChild(cat);
+      meta.appendChild(document.createTextNode(", " + p.q + " "));
+
+      var rate = document.createElement("span");
+      rate.className = "rate";
+      var star = document.createElement("i");
+      star.textContent = "★";
+      rate.appendChild(star);
+      rate.appendChild(document.createTextNode(" " + String(p.r).replace(".", ",") + " (" + p.a + " avis)"));
+
+      var d = document.createElement("p");
+      d.className = "desc";
+      d.textContent = p.d;
+
+      var act = document.createElement("div");
+      act.className = "actions";
+      var call = document.createElement("a");
+      call.className = "btn call";
+      call.href = "tel:+" + p.t;
+      call.textContent = "Appeler";
+      var wa = document.createElement("a");
+      wa.className = "btn wa";
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wa.href = "https://wa.me/" + p.t + "?text=" +
+        encodeURIComponent("Bonjour, je vous ai trouvé sur Trouve Pro. J'ai besoin de vos services.");
+      wa.textContent = "WhatsApp";
+      act.appendChild(call);
+      act.appendChild(wa);
+
+      li.appendChild(h);
+      li.appendChild(meta);
+      li.appendChild(rate);
+      li.appendChild(d);
+      li.appendChild(act);
+      list.appendChild(li);
+    });
+  }
+
+  function getInscription() {
+    var nom = $("jn").value.trim();
+    var tel = $("jt").value.replace(/\s/g, "");
+    var err = $("err");
+    if (!nom) { err.textContent = "Écris ton nom ou le nom de ton atelier."; return null; }
+    if (!/^\+?\d{9,12}$/.test(tel)) { err.textContent = "Écris un numéro de téléphone valide, par exemple 6XX XX XX XX."; return null; }
+    err.textContent = "";
+    return "Inscription Trouve Pro\nNom : " + nom +
+      "\nMétier : " + CATS[$("jm").value].label +
+      "\nQuartier : " + $("jq").value +
+      "\nTéléphone : " + tel;
+  }
+
+  $("send").onclick = function () {
+    var msg = getInscription();
+    if (!msg) return;
+    window.open("https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank");
+  };
+
+  $("sendMail").onclick = function () {
+    var msg = getInscription();
+    if (!msg) return;
+    window.location.href = "mailto:" + ADMIN_EMAIL +
+      "?subject=" + encodeURIComponent("Inscription Trouve Pro") +
+      "&body=" + encodeURIComponent(msg);
+  };
+
+  buildControls();
+  render();
+</script>
+</body>
+</html>
